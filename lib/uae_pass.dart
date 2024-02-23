@@ -33,6 +33,16 @@ class UaePass {
     }
   }
 
+  Future<String> signDocument(String urlString) async {
+    try {
+      return await UaePassPlatform.instance.signDocument(urlString);
+    } on PlatformException catch (e) {
+      throw (e.message ?? "Unknown error");
+    } catch (e) {
+      throw ("Unknown error");
+    }
+  }
+
   Future<String> getAccessToken(String token) async {
     try {
       return await UaePassPlatform.instance.getAuthToken(token);

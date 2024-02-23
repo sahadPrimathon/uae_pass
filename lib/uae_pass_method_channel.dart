@@ -39,6 +39,12 @@ class MethodChannelUaePass extends UaePassPlatform {
   }
 
   @override
+  Future<String> signDocument(String urlString) async {
+    final result = await methodChannel.invokeMethod<String>('sign_document', {"url": urlString});
+    return result!;
+  }
+
+  @override
   Future<String> getAuthToken(String code) async {
     final result = await methodChannel.invokeMethod<String>('auth_token', {
       'code': code,

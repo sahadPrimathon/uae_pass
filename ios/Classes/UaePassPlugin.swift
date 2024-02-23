@@ -84,6 +84,24 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
             webVC.reloadwithURL(url: webVC.urlString)
             UIApplication.shared.keyWindow?.rootViewController?.present(webVC, animated: true)
         }
+        case "sign_document":
+            if let webVC = UAEPassWebViewController.instantiate() as? UAEPassWebViewController, let arguments = call.arguments as? [String: Any]{
+                let code = arguments["url"] as! String
+                webVC.urlString = code
+                
+                webVC.onSigningCompleted = {() -> Void in
+                    UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
+                    self.flutterResult!(String(code))
+                    return
+                    
+                }
+                webVC.onUAEPassFailureBlock = {(response: String?) -> Void in
+                    UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
+                    self.flutterResult!(response)
+                }
+                webVC.reloadwithURL(url: webVC.urlString)
+                UIApplication.shared.keyWindow?.rootViewController?.present(webVC, animated: true)
+            }
     default:
       self.flutterResult!(FlutterMethodNotImplemented)
     }
