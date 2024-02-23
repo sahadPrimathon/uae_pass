@@ -2,6 +2,7 @@ package com.mvpapps.uae_pass_flutter
 
 import ae.sdg.libraryuaepass.*
 import ae.sdg.libraryuaepass.UAEPassController.getAccessToken
+import ae.sdg.libraryuaepass.UAEPassController.signDocument
 import ae.sdg.libraryuaepass.UAEPassController.getAccessCode
 import ae.sdg.libraryuaepass.UAEPassController.resume
 import ae.sdg.libraryuaepass.business.authentication.model.UAEPassAccessTokenRequestModel
@@ -43,8 +44,6 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
   private var failureHost: String? = null
   private var successHost: String? = null
   private var scope: String? = "urn:uae:digitalid:profile"
-   
-
 
   private  val UAE_PASS_PACKAGE_ID = "ae.uaepass.mainapp"
   private  val UAE_PASS_QA_PACKAGE_ID = "ae.uaepass.mainapp.qa"
@@ -153,6 +152,21 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
         }
       })
     }
+    else if(call.method=="sign_document")
+    {
+        requestModel = getDocumentRequestModel(activity!!)
+        var url = call.argument<String>("url")
+        signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
+            override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?){
+                if(documentURL != null) {
+                    result.success(spId)
+                }
+                else {
+                    result.error("ERROR", error, null)
+                }
+            }
+        })
+    }
 
     else {
       result.notImplemented()
@@ -216,5 +230,28 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
             Language.EN,
 
         )
+    }
+
+    fun getDocumentRequestModel(context: Context): UAEPassDocumentSigningRequestModel {
+        val ACR_VALUE = if (isPackageInstalled(context.packageManager)) {
+            ACR_VALUES_MOBILE
+        } else {
+            ACR_VALUES_WEB
+        }
+        return UAEPassDocumentSigningRequestModel(
+                environment!!,
+                client_id!!,
+                client_secret!!,
+                scheme!!,
+                failureHost!!,
+                successHost!!,
+                redirect_url!!,
+                scope!!,
+                RESPONSE_TYPE,
+                ACR_VALUE,
+                state!!,
+                Language.EN,
+
+                )
     }
 }
