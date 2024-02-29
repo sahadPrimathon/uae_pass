@@ -6,6 +6,8 @@ import ae.sdg.libraryuaepass.UAEPassController.signDocument
 import ae.sdg.libraryuaepass.UAEPassController.getAccessCode
 import ae.sdg.libraryuaepass.UAEPassController.resume
 import ae.sdg.libraryuaepass.business.authentication.model.UAEPassAccessTokenRequestModel
+import ae.sdg.libraryuaepass.business.documentsigning.model.DocumentSigningRequestParams
+import ae.sdg.libraryuaepass.business.documentsigning.model.UAEPassDocumentSigningRequestModel
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -154,8 +156,9 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     }
     else if(call.method=="sign_document")
     {
-        requestModel = getDocumentRequestModel(activity!!)
         var url = call.argument<String>("url")
+        var fileObj = new File(new URI(url));
+        requestModel = getDocumentRequestModel(fileObj, DocumentSigningRequestParams())
         signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
             override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?){
                 if(documentURL != null) {
@@ -232,26 +235,21 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
         )
     }
 
-    fun getDocumentRequestModel(context: Context): UAEPassDocumentSigningRequestModel {
-        val ACR_VALUE = if (isPackageInstalled(context.packageManager)) {
-            ACR_VALUES_MOBILE
-        } else {
-            ACR_VALUES_WEB
-        }
+    fun getDocumentRequestModel(
+            file: File?,
+            documentSigningParams: DocumentSigningRequestParams
+    ): UAEPassDocumentSigningRequestModel {
         return UAEPassDocumentSigningRequestModel(
-                environment!!,
-                client_id!!,
-                client_secret!!,
-                scheme!!,
-                failureHost!!,
-                successHost!!,
+                UAE_PASS_ENVIRONMENT,
+                UAE_PASS_CLIENT_ID,
+                UAE_PASS_CLIENT_SECRET,
+                SCHEME,
+                FAILURE_HOST,
+                SUCCESS_HOST,
                 redirect_url!!,
-                scope!!,
-                RESPONSE_TYPE,
-                ACR_VALUE,
-                state!!,
-                Language.EN,
-
-                )
+                DOCUMENT_SIGNING_SCOPE,
+                file!!,
+                documentSigningParams
+        )
     }
 }
