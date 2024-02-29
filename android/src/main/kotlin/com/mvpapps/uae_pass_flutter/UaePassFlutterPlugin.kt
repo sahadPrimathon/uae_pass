@@ -158,17 +158,31 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     {
         var url = call.argument<String>("url")
         var fileObj = File( URI.parse(url));
-        requestModel = getDocumentRequestModel(fileObj)
-        signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
-            override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?){
-                if(documentURL != null) {
-                    result.success(spId)
+        val documentSigningParams = loadDocumentSigningJson()
+        documentSigningParams?.let {
+            val requestModel = getDocumentRequestModel(file, it)
+            signDocument(this@MainActivity, requestModel, object : UAEPassDocumentSigningCallback {
+                override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?) {
+                    if (error != null) {
+                        result.error("ERROR", error, null)
+                    } else {
+                        result.success(spId)
+                    }
                 }
-                else {
-                    result.error("ERROR", error, null)
-                }
-            }
-        })
+            })
+        }
+
+        //requestModel = getDocumentRequestModel(fileObj)
+        //signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
+        //    override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?){
+        //        if(documentURL != null) {
+        //            result.success(spId)
+          //      }
+            //    else {
+              //      result.error("ERROR", error, null)
+    //            }
+      //      }
+      //  })
     }
 
     else {
@@ -236,7 +250,8 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     }
 
     fun getDocumentRequestModel(
-            file: File?
+            file: File?,
+            documentSigningParams: DocumentSigningRequestParams
     ): UAEPassDocumentSigningRequestModel {
         return UAEPassDocumentSigningRequestModel(
                 environment!!,
@@ -248,7 +263,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
                 redirect_url!!,
                 "urn:safelayer:eidas:sign:process:document",
                 file!!,
-                loadDocumentSigningJson()!!
+                documentSigningParams
         )
     }
 
