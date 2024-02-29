@@ -27,6 +27,12 @@ class MockUaePassPlatform
     throw UnimplementedError();
   }
 
+   @override
+  Future<String> signDocument(String url) {
+    // TODO: implement signOut
+    throw UnimplementedError();
+  }
+
   @override
   Future<String> getAccessToken(String code) {
     // TODO: implement getAccessToken

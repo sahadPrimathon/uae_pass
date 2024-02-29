@@ -54,6 +54,19 @@ import WebKit
         }
     }
 
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let cancelVw = UIView()
+        cancelVw.frame = CGRect(x: 0, y: 0, width: Int(self.view.bounds.width), height: 40)
+        let closeLbl = UILabel()
+        closeLbl.textColor = .black
+        closeLbl.frame = CGRect(x: 0, y:cancelVw.frame.height/2 - 8, width: view.frame.width, height: 20)
+        closeLbl.textAlignment = .center
+        closeLbl.text = "Swipe to Close"
+        cancelVw.addSubview(closeLbl)
+        view.addSubview(cancelVw)
+    }
+
     @objc public func forceReload() { 
         if let successurl = successURLR {
             webView?.load(URLRequest(url: URL(string: successurl)!))
@@ -120,13 +133,12 @@ import WebKit
             }
         } else if navigationAction.navigationType == .linkActivated && (urlString.contains("signup") || urlString.contains("account-recovery")) {
             if let url = navigationAction.request.mainDocumentURL {
-                decisionHandler(.allow, contentMode)
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 decisionHandler(.cancel, contentMode)
             } else {
                 decisionHandler(.allow, contentMode)
             }
-        } else {
+        }  else {
             decisionHandler(.allow, contentMode)
         }
     }
