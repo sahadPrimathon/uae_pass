@@ -240,14 +240,14 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
             documentSigningParams: DocumentSigningRequestParams
     ): UAEPassDocumentSigningRequestModel {
         return UAEPassDocumentSigningRequestModel(
-                UAE_PASS_ENVIRONMENT,
-                UAE_PASS_CLIENT_ID,
-                UAE_PASS_CLIENT_SECRET,
-                SCHEME,
-                FAILURE_HOST,
-                SUCCESS_HOST,
+                environment!!,
+                client_id!!,
+                client_secret!!,
+                scheme!!,
+                failureHost!!,
+                successHost!!,
                 redirect_url!!,
-                DOCUMENT_SIGNING_SCOPE,
+                "urn:safelayer:eidas:sign:process:document",
                 file!!,
                 documentSigningParams
         )
