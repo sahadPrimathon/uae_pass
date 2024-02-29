@@ -157,8 +157,8 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     else if(call.method=="sign_document")
     {
         var url = call.argument<String>("url")
-        var fileObj = new File(new URI(url));
-        requestModel = getDocumentRequestModel(fileObj, DocumentSigningRequestParams())
+        var fileObj = File( URI.parse(url));
+        requestModel = getDocumentRequestModel(fileObj)
         signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
             override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?){
                 if(documentURL != null) {
@@ -236,8 +236,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     }
 
     fun getDocumentRequestModel(
-            file: File?,
-            documentSigningParams: DocumentSigningRequestParams
+            file: File?
     ): UAEPassDocumentSigningRequestModel {
         return UAEPassDocumentSigningRequestModel(
                 environment!!,
@@ -249,7 +248,28 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
                 redirect_url!!,
                 "urn:safelayer:eidas:sign:process:document",
                 file!!,
-                documentSigningParams
+                loadDocumentSigningJson()!!
         )
+    }
+
+     /**
+     * Load Document Signing Json from assets.
+     *
+     * @return DocumentSigningRequestParams Mandatory Parameters
+     */
+    private fun loadDocumentSigningJson(): DocumentSigningRequestParams? {
+        var json: String? = null
+        json = try {
+            val `is` = assets.open("testSignData.json")
+            val size = `is`.available()
+            val buffer = ByteArray(size)
+            `is`.read(buffer)
+            `is`.close()
+            String(buffer, Charset.forName("UTF-8"))
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+        return Gson().fromJson(json, DocumentSigningRequestParams::class.java)
     }
 }

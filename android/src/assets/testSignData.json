@@ -1,0 +1,56 @@
+{
+    "process_type": "urn:safelayer:eidas:processes:document:sign:esigp",
+    "labels": [
+        [
+            "advanced",
+            "digitalid",
+            "server"
+        ]
+    ],
+    "signer": {
+        "signature_policy_id": "urn:safelayer:eidas:policies:sign:document:pdf",
+        "parameters": {
+            "type": "pdf",
+            "signature_field": {
+                "name": "Sign1",
+                "location": {
+                    "page": {
+                        "number": "last"
+                    },
+                    "rectangle": {
+                        "x": 100,
+                        "y": 110,
+                        "height": 150,
+                        "width": 400
+                    }
+                },
+                "appearance": {
+                    "signature_details": {
+                        "details": [
+                            {
+                                "type": "subject",
+                                "title": "Signer Name: "
+                            },
+                            {
+                                "type": "date",
+                                "title": "Signature Date: "
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "ui_locales": [
+        "en_US"
+    ],
+    "finish_callback_url": "uaepasssuperapp://sign",
+    "views": {
+        "document_agreement": {
+            "skip_server_id": "true"
+        }
+    },
+    "timestamp": {
+        "provider_id": "urn:uae:tws:generation:policy:digitalid"
+    }
+}

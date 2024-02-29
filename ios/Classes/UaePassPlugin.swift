@@ -88,8 +88,8 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
         }
         case "sign_document":
             if let webVC = UAEPassWebViewController.instantiate() as? UAEPassWebViewController, let arguments = call.arguments as? [String: Any]{
-                let code = arguments["url"] as! String
-                webVC.urlString = code
+                let url = arguments["url"] as! String
+                webVC.urlString = url
                 
                 webVC.onSigningCompleted = {() -> Void in
                     UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
