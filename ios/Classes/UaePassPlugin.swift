@@ -93,7 +93,7 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
                 
                 webVC.onSigningCompleted = {() -> Void in
                     UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
-                    self.flutterResult!(String(code))
+                    self.flutterResult!(String(url))
                     return
                     
                 }
