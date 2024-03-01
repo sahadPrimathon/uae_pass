@@ -26,6 +26,11 @@ import ae.sdg.libraryuaepass.business.Environment
 import android.content.pm.PackageManager
 import ae.sdg.libraryuaepass.business.Language
 import ae.sdg.libraryuaepass.utils.Utils.generateRandomString
+import com.google.gson.Gson
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.nio.charset.Charset
 
 // create a class that implements the PluginRegistry.NewIntentListener interface
  
@@ -157,11 +162,11 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     else if(call.method=="sign_document")
     {
         var url = call.argument<String>("url")
-        var fileObj = File( URI.parse(url));
+        var file = File( URI.parse(url));
         val documentSigningParams = loadDocumentSigningJson()
         documentSigningParams?.let {
             val requestModel = getDocumentRequestModel(file, it)
-            signDocument(this@MainActivity, requestModel, object : UAEPassDocumentSigningCallback {
+            signDocument(activity!!, requestModel, object : UAEPassDocumentSigningCallback {
                 override fun getDocumentUrl(spId: String?, documentURL: String?, error: String?) {
                     if (error != null) {
                         result.error("ERROR", error, null)
