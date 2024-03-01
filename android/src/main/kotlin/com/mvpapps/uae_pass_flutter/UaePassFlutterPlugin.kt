@@ -32,7 +32,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.charset.Charset
 import java.net.URI
-import android.view
+import java.io.InputStream
 
 // create a class that implements the PluginRegistry.NewIntentListener interface
  
@@ -164,7 +164,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     else if(call.method=="sign_document")
     {
         var url = call.argument<String>("url")
-        var file = File( URI.parse(url));
+        var file = File( Uri.parse(url));
         val documentSigningParams = loadDocumentSigningJson()
         documentSigningParams?.let {
             val requestModel = getDocumentRequestModel(file, it)
