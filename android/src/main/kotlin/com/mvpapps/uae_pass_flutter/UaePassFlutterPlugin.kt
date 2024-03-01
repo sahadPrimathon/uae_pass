@@ -12,6 +12,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.os.StrictMode
 import android.webkit.CookieManager
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -31,9 +32,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.charset.Charset
-import java.net.URI
+import java.net.URL
 import java.io.InputStream
-
+import java.util.Base64
 // create a class that implements the PluginRegistry.NewIntentListener interface
  
 
@@ -163,8 +164,15 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     }
     else if(call.method=="sign_document")
     {
-        var url = call.argument<String>("url")
-        var file = File( URI(url));
+        var base64Str = call.argument<String>("url")
+        val decodedBytes: ByteArray = Base64.getDecoder().decode(base64Str)
+
+        val cacheDir = activity!!.cacheDir
+        val file = File(cacheDir, "myCacheData")
+        FileOutputStream(file).use { fos ->
+            fos.write(decodedBytes)
+            fos.flush()
+        }
         val documentSigningParams = loadDocumentSigningJson()
         documentSigningParams?.let {
             val requestModel = getDocumentRequestModel(file, it)
@@ -196,6 +204,8 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
       result.notImplemented()
     }
   }
+
+  
   override  fun onNewIntent(intent: Intent): Boolean {
      handleIntent(intent)
     return false
@@ -280,13 +290,11 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
      * @return DocumentSigningRequestParams Mandatory Parameters
      */
     private fun loadDocumentSigningJson(): DocumentSigningRequestParams? {
-        var json: String? = null
+       var json: String? = null
+        var jsonbase: String = "ewogICAgInByb2Nlc3NfdHlwZSI6ICJ1cm46c2FmZWxheWVyOmVpZGFzOnByb2Nlc3Nlczpkb2N1bWVudDpzaWduOmVzaWdwIiwKICAgICJsYWJlbHMiOiBbCiAgICAgICAgWwogICAgICAgICAgICAiYWR2YW5jZWQiLAogICAgICAgICAgICAiZGlnaXRhbGlkIiwKICAgICAgICAgICAgInNlcnZlciIKICAgICAgICBdCiAgICBdLAogICAgInNpZ25lciI6IHsKICAgICAgICAic2lnbmF0dXJlX3BvbGljeV9pZCI6ICJ1cm46c2FmZWxheWVyOmVpZGFzOnBvbGljaWVzOnNpZ246ZG9jdW1lbnQ6cGRmIiwKICAgICAgICAicGFyYW1ldGVycyI6IHsKICAgICAgICAgICAgInR5cGUiOiAicGRmIiwKICAgICAgICAgICAgInNpZ25hdHVyZV9maWVsZCI6IHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNpZ24xIiwKICAgICAgICAgICAgICAgICJsb2NhdGlvbiI6IHsKICAgICAgICAgICAgICAgICAgICAicGFnZSI6IHsKICAgICAgICAgICAgICAgICAgICAgICAgIm51bWJlciI6ICJsYXN0IgogICAgICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAgICAgInJlY3RhbmdsZSI6IHsKICAgICAgICAgICAgICAgICAgICAgICAgIngiOiAzNTAsCiAgICAgICAgICAgICAgICAgICAgICAgICJ5IjogMTAwLAogICAgICAgICAgICAgICAgICAgICAgICAiaGVpZ2h0IjogNTAsCiAgICAgICAgICAgICAgICAgICAgICAgICJ3aWR0aCI6IDIxNQogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAiYXBwZWFyYW5jZSI6IHsKICAgICAgICAgICAgICAgICAgICAic2lnbmF0dXJlX2RldGFpbHMiOiB7CiAgICAgICAgICAgICAgICAgICAgICAgICJkZXRhaWxzIjogWwogICAgICAgICAgICAgICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0eXBlIjogInN1YmplY3QiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0aXRsZSI6ICJTaWduZXIgTmFtZTogIgogICAgICAgICAgICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAidHlwZSI6ICJkYXRlIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAidGl0bGUiOiAiU2lnbmF0dXJlIERhdGU6ICIKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAgICAgXQogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0sCiAgICAidWlfbG9jYWxlcyI6IFsKICAgICAgICAiZW5fVVMiCiAgICBdLAogICAgImZpbmlzaF9jYWxsYmFja191cmwiOiAidWFlcGFzc3N1cGVyYXBwOi8vc2lnbiIsCiAgICAidmlld3MiOiB7CiAgICAgICAgImRvY3VtZW50X2FncmVlbWVudCI6IHsKICAgICAgICAgICAgInNraXBfc2VydmVyX2lkIjogImZhbHNlIgogICAgICAgIH0KICAgIH0sCiAgICAidGltZXN0YW1wIjogewogICAgICAgICJwcm92aWRlcl9pZCI6ICJ1cm46dWFlOnR3czpnZW5lcmF0aW9uOnBvbGljeTpkaWdpdGFsaWQiCiAgICB9Cn0K"
+        
         json = try {
-            val `is` =  activity!!.assets.open("testSignData.json")
-            val size = `is`.available()
-            val buffer = ByteArray(size)
-            `is`.read(buffer)
-            `is`.close()
+            val buffer: ByteArray = Base64.getDecoder().decode(jsonbase)
             String(buffer, Charset.forName("UTF-8"))
         } catch (ex: IOException) {
             ex.printStackTrace()
