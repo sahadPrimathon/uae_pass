@@ -164,7 +164,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     else if(call.method=="sign_document")
     {
         var url = call.argument<String>("url")
-        var file = File( Uri.parse(url));
+        var file = File( URI(url));
         val documentSigningParams = loadDocumentSigningJson()
         documentSigningParams?.let {
             val requestModel = getDocumentRequestModel(file, it)
@@ -282,7 +282,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
     private fun loadDocumentSigningJson(): DocumentSigningRequestParams? {
         var json: String? = null
         json = try {
-            val `is` = assets.open("testSignData.json")
+            val `is` =  activity!!.assets.open("testSignData.json")
             val size = `is`.available()
             val buffer = ByteArray(size)
             `is`.read(buffer)
