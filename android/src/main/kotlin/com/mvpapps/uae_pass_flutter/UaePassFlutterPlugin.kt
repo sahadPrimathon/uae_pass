@@ -31,6 +31,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.charset.Charset
+import java.net.URI
+import android.view
 
 // create a class that implements the PluginRegistry.NewIntentListener interface
  
