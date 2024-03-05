@@ -90,10 +90,9 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
             if let webVC = UAEPassWebViewController.instantiate() as? UAEPassWebViewController, let arguments = call.arguments as? [String: Any]{
                 let url = arguments["url"] as! String
                 webVC.urlString = url
-                
-                webVC.onSigningCompleted = {() -> Void in
+                webVC.onSigningCompleted = {(finalUrl: String?) -> Void in
                     UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
-                    self.flutterResult!(String(url))
+                    self.flutterResult!(["url": String(url)])
                     return
                     
                 }

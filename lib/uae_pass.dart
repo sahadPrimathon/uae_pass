@@ -33,7 +33,7 @@ class UaePass {
     }
   }
 
-  Future<String> signDocument(String urlString) async {
+  Future<Map<String, String>> signDocument(String urlString) async {
     try {
       return await UaePassPlatform.instance.signDocument(urlString);
     } on PlatformException catch (e) {

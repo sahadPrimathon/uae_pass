@@ -28,7 +28,7 @@ class MockUaePassPlatform
   }
 
    @override
-  Future<String> signDocument(String url) {
+  Future<Map<String, String>> signDocument(String url) {
     // TODO: implement signOut
     throw UnimplementedError();
   }

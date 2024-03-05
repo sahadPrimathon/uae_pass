@@ -16,7 +16,7 @@ import WebKit
     @objc public var onUAEPassSigningCodeRecieved:(() -> Void)? = nil
     @objc public var onUAEPassSuccessBlock: ((String) -> Void)? = nil
     @objc public var onUAEPassFailureBlock: ((String) -> Void)? = nil
-    @objc public var onSigningCompleted: (() -> Void)? = nil
+    @objc public var onSigningCompleted: ((String) -> Void)? = nil
     @objc public var onDismiss: (() -> Void)? = nil
     @objc var webView: WKWebView?
     var successURLR: String?
@@ -122,7 +122,7 @@ import WebKit
             }
             decisionHandler(.cancel, contentMode)
         } else if urlString.contains("status=finished") {
-            onSigningCompleted?()
+            onSigningCompleted?(urlString)
             decisionHandler(.cancel, contentMode)
         } else if urlString.contains("status=") {
             if urlString.contains("status=success") {

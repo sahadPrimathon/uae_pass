@@ -39,8 +39,8 @@ class MethodChannelUaePass extends UaePassPlatform {
   }
 
   @override
-  Future<String> signDocument(String urlString) async {
-    final result = await methodChannel.invokeMethod<String>('sign_document', {"url": urlString});
+  Future<Map<String, String>> signDocument(String urlString) async {
+    final result = await methodChannel.invokeMethod<Map<String, String>>('sign_document', {"url": urlString});
     return result!;
   }
 
