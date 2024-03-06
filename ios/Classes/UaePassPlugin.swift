@@ -92,7 +92,12 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
                 webVC.urlString = url
                 webVC.onSigningCompleted = {(finalUrl: String?) -> Void in
                     UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true)
-                    self.flutterResult!(["url": String(url)])
+                    guard let urlComponents = URLComponents(string: url) else {
+                        return
+                    }
+                    var signerId = urlComponents.queryItems?.first(where: { $0.name == "signerProcessId" })?.value
+                    print(signerId);
+                    self.flutterResult!(signerId)
                     return
                     
                 }

@@ -121,7 +121,7 @@ import WebKit
                 }
             }
             decisionHandler(.cancel, contentMode)
-        } else if urlString.contains("status=finished") {
+        } else if (urlString.contains("csrf_token=") && urlString.contains("show_signing_details=")) {
             onSigningCompleted?(urlString)
             decisionHandler(.cancel, contentMode)
         } else if urlString.contains("status=") {
