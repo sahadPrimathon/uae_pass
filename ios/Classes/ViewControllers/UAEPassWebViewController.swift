@@ -87,6 +87,8 @@ import WebKit
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
         let url = navigationAction.request.url
         guard let urlString = navigationAction.request.mainDocumentURL?.absoluteString else { return }
+        print(urlString)
+
         if urlString.contains("error=access_denied") || urlString.contains("error=cancelled") {
             if alreadyCanceled == false {
                 skipDismiss = true
@@ -121,11 +123,14 @@ import WebKit
                 }
             }
             decisionHandler(.cancel, contentMode)
-        } else if (urlString.contains("csrf_token=") && urlString.contains("show_signing_details=")) {
-            onSigningCompleted?(urlString)
-            decisionHandler(.cancel, contentMode)
+//        } else if (urlString.contains("csrf_token=") && urlString.contains("show_signing_details=")) {
+//            onSigningCompleted?(urlString)
+//            decisionHandler(.allow, contentMode)
         } else if urlString.contains("status=") {
             if urlString.contains("status=success") {
+                decisionHandler(.allow, contentMode)
+            } else if (urlString.contains("status=finished") && urlString.contains("signer_process_id")) {
+                onSigningCompleted?(urlString)
                 decisionHandler(.allow, contentMode)
             } else {
                 onUAEPassFailureBlock?("Signing Failed")

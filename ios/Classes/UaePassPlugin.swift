@@ -112,7 +112,8 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
       self.flutterResult!(FlutterMethodNotImplemented)
     }
   }
- public func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {       
+ public func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {    
+     print(url.absoluteString)
         if url.absoluteString.contains(HandleURLScheme.externalURLSchemeSuccess()) {
             if let topViewController = UserInterfaceInfo.topViewController() {
                 if let webViewController = topViewController as? UAEPassWebViewController {
