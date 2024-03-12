@@ -168,7 +168,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
         val decodedBytes: ByteArray = Base64.getDecoder().decode(base64Str)
 
         val cacheDir = activity!!.cacheDir
-        val file = File(cacheDir, "myCacheData")
+        val file = File(cacheDir, "document.pdf")
         FileOutputStream(file).use { fos ->
             fos.write(decodedBytes)
             fos.flush()
@@ -181,7 +181,7 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
                     if (error != null) {
                         result.error("ERROR", error, null)
                     } else {
-                        result.success(spId)
+                        result.success(documentURL + "/***/" + spId)
                     }
                 }
             })
