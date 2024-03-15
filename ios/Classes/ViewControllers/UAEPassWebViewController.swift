@@ -10,7 +10,7 @@ import UIKit
 import WebKit
 
 @available(iOS 13.0, *)
-@objc public class UAEPassWebViewController: UIViewController, WKNavigationDelegate {
+@objc public class UAEPassWebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
     
     @objc public var urlString: String!
     @objc public var onUAEPassSigningCodeRecieved:(() -> Void)? = nil
@@ -27,6 +27,9 @@ import WebKit
     public override func viewDidLoad() {
         self.title = "UAE PASS"
         contentMode.preferredContentMode = .mobile
+        if #available(iOS 14.0, *) {
+            contentMode.allowsContentJavaScript = true
+        }
         self.navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
@@ -35,6 +38,7 @@ import WebKit
     public func reloadwithURL(url: String) {
         webView = UAEPASSRouter.shared.webView
         webView?.navigationDelegate = self
+        webView?.uiDelegate = self
         webView?.frame = self.view.frame
         if let webView = webView {
             _ = view.addSubviewStretched(subview: webView)
@@ -144,11 +148,57 @@ import WebKit
                 decisionHandler(.allow, contentMode)
             }
         }  else {
-            decisionHandler(.allow, contentMode)
+            
+            if #available(iOS 14.5, *) {
+                if navigationAction.shouldPerformDownload || urlString.contains("trustedx-resources/esignsp/v2/ui/documents/"){
+//                    print("download");
+                        decisionHandler(.allow, contentMode)
+                    } else {
+                        print("downloadxxxxx allow");
+                        decisionHandler(.allow, contentMode)
+                    }
+            } else {
+                print("allow");
+                // Fallback on earlier versions
+                decisionHandler(.allow, contentMode)
+            }
         }
+        
     }
     
+   public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+
+        if navigationResponse.canShowMIMEType {
+                decisionHandler(.allow)
+            } else {
+                if #available(iOS 14.5, *) {
+                    decisionHandler(.allow)
+                } else {
+                    // Fallback on earlier versions
+                    decisionHandler(.allow)
+                }
+            }
+    }
+
+    public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+
+            // open in current view
+                    let viewController = PDFWebViewController()
+
+            // the url can be a web url or a file url
+         configuration.websiteDataStore.httpCookieStore.getAllCookies({ cookies in
+             viewController.cookies = cookies;
+             viewController.pdfURL = navigationAction.request.url!
+             self.present(viewController, animated: true);
+        })
+//            webView.load(navigationAction.request)
+
+            // don't return a new view to build a popup into (the default behavior).
+            return nil;
+        }
+    
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        
         if error._code == -1001 || error._code == -1003 || error._code == -1100 {
             if error._code == -1001 { // TIMED OUT:
                 // CODE to handle TIMEOUT

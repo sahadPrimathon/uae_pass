@@ -15,8 +15,11 @@ extension WKProcessPool {
 
 extension WKWebViewConfiguration {
     static var shared: WKWebViewConfiguration {
+        let preferences = WKPreferences()
+        preferences.javaScriptEnabled = true
         let configuration = WKWebViewConfiguration()
         configuration.processPool = WKProcessPool.shared
+        configuration.preferences = preferences
         return configuration
     }
 }
