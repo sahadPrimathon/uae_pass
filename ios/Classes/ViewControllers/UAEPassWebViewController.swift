@@ -34,7 +34,7 @@ import WebKit
     }
     
     let contentMode = WKWebpagePreferences.init()
-
+    
     public func reloadwithURL(url: String) {
         webView = UAEPASSRouter.shared.webView
         webView?.navigationDelegate = self
@@ -44,6 +44,8 @@ import WebKit
             _ = view.addSubviewStretched(subview: webView)
         }
         self.urlString = url
+        restoreCookies()
+
         if let url = URL(string: url) {
             var urlRequest = URLRequest(url: url)
             urlRequest.timeoutInterval = 30
@@ -54,10 +56,10 @@ import WebKit
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         if isBeingDismissed && !skipDismiss {
-            onDismiss?() 
+            onDismiss?()
         }
     }
-
+    
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let cancelVw = UIView()
@@ -70,8 +72,8 @@ import WebKit
         cancelVw.addSubview(closeLbl)
         view.addSubview(cancelVw)
     }
-
-    @objc public func forceReload() { 
+    
+    @objc public func forceReload() {
         if let successurl = successURLR {
             webView?.load(URLRequest(url: URL(string: successurl)!))
         } else {
@@ -79,7 +81,7 @@ import WebKit
         }
     }
     
-    @objc public func foreceStop() { 
+    @objc public func foreceStop() {
         webView?.stopLoading()
         if alreadyCanceled == false {
             skipDismiss = true
@@ -92,7 +94,7 @@ import WebKit
         let url = navigationAction.request.url
         guard let urlString = navigationAction.request.mainDocumentURL?.absoluteString else { return }
         print(urlString)
-
+        
         if urlString.contains("error=access_denied") || urlString.contains("error=cancelled") {
             if alreadyCanceled == false {
                 skipDismiss = true
@@ -102,8 +104,9 @@ import WebKit
             decisionHandler(.cancel, contentMode)
         } else if urlString.contains(UAEPASSRouter.shared.spConfig.redirectUriLogin) && urlString.contains("code=") {
             if let url = url, let token = url.valueOf("code") {
-
+                
                 if onUAEPassSuccessBlock != nil && !token.isEmpty {
+                    storeCookies()
                     skipDismiss = true
                     onUAEPassSuccessBlock?(token)
                 }
@@ -127,9 +130,9 @@ import WebKit
                 }
             }
             decisionHandler(.cancel, contentMode)
-//        } else if (urlString.contains("csrf_token=") && urlString.contains("show_signing_details=")) {
-//            onSigningCompleted?(urlString)
-//            decisionHandler(.allow, contentMode)
+            //        } else if (urlString.contains("csrf_token=") && urlString.contains("show_signing_details=")) {
+            //            onSigningCompleted?(urlString)
+            //            decisionHandler(.allow, contentMode)
         } else if urlString.contains("status=") {
             if urlString.contains("status=success") {
                 decisionHandler(.allow, contentMode)
@@ -151,12 +154,12 @@ import WebKit
             
             if #available(iOS 14.5, *) {
                 if navigationAction.shouldPerformDownload || urlString.contains("trustedx-resources/esignsp/v2/ui/documents/"){
-//                    print("download");
-                        decisionHandler(.allow, contentMode)
-                    } else {
-                        print("downloadxxxxx allow");
-                        decisionHandler(.allow, contentMode)
-                    }
+                    //                    print("download");
+                    decisionHandler(.allow, contentMode)
+                } else {
+                    print("downloadxxxxx allow");
+                    decisionHandler(.allow, contentMode)
+                }
             } else {
                 print("allow");
                 // Fallback on earlier versions
@@ -166,36 +169,36 @@ import WebKit
         
     }
     
-   public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        
         if navigationResponse.canShowMIMEType {
+            decisionHandler(.allow)
+        } else {
+            if #available(iOS 14.5, *) {
                 decisionHandler(.allow)
             } else {
-                if #available(iOS 14.5, *) {
-                    decisionHandler(.allow)
-                } else {
-                    // Fallback on earlier versions
-                    decisionHandler(.allow)
-                }
+                // Fallback on earlier versions
+                decisionHandler(.allow)
             }
-    }
-
-    public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-
-            // open in current view
-                    let viewController = PDFWebViewController()
-
-            // the url can be a web url or a file url
-         configuration.websiteDataStore.httpCookieStore.getAllCookies({ cookies in
-             viewController.cookies = cookies;
-             viewController.pdfURL = navigationAction.request.url!
-             self.present(viewController, animated: true);
-        })
-//            webView.load(navigationAction.request)
-
-            // don't return a new view to build a popup into (the default behavior).
-            return nil;
         }
+    }
+    
+    public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        
+        // open in current view
+        let viewController = PDFWebViewController()
+        
+        // the url can be a web url or a file url
+        configuration.websiteDataStore.httpCookieStore.getAllCookies({ cookies in
+            viewController.cookies = cookies;
+            viewController.pdfURL = navigationAction.request.url!
+            self.present(viewController, animated: true);
+        })
+        //            webView.load(navigationAction.request)
+        
+        // don't return a new view to build a popup into (the default behavior).
+        return nil;
+    }
     
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         
@@ -215,7 +218,37 @@ import WebKit
             onUAEPassFailureBlock?("cancel")
         }
     }
+    
+    func storeCookies() {
+        let cookiesStorage = HTTPCookieStorage.shared
+        let userDefaults = UserDefaults.standard
+        
+        
+        webView!.configuration.websiteDataStore.httpCookieStore.getAllCookies({ cookies in
+            var cookieDict = [String : AnyObject]()
+            for cookie in cookies {
+                cookieDict[cookie.name] = cookie.properties as AnyObject?
+            }
+            userDefaults.set(cookieDict, forKey: "cookiesKey")
+            userDefaults.synchronize()
+        })
+    }
+    
+    func restoreCookies() {
+        let cookiesStorage = webView!.configuration.websiteDataStore.httpCookieStore
+        let userDefaults = UserDefaults.standard
+        
+        if let cookieDictionary = userDefaults.dictionary(forKey: "cookiesKey") {
+            
+            for (_, cookieProperties) in cookieDictionary {
+                if let cookie = HTTPCookie(properties: cookieProperties as! [HTTPCookiePropertyKey : Any] ) {
+                    cookiesStorage.setCookie(cookie)
+                }
+            }
+        }
+    }
 }
+
 
 // MARK: - ConfigrationInstanceProtocol
 @available(iOS 13.0, *)
@@ -234,10 +267,10 @@ public extension UIView {
         guard let subview = subview else {
             return nil
         }
-
+        
         subview.translatesAutoresizingMaskIntoConstraints = false
         addSubview(subview)
-
+        
         let constraintLeading = NSLayoutConstraint(item: subview,
                                                    attribute: .left,
                                                    relatedBy: .equal,
@@ -246,7 +279,7 @@ public extension UIView {
                                                    multiplier: 1,
                                                    constant: insets.left)
         addConstraint(constraintLeading)
-
+        
         let constraintTrailing = NSLayoutConstraint(item: self,
                                                     attribute: .right,
                                                     relatedBy: .equal,
@@ -255,7 +288,7 @@ public extension UIView {
                                                     multiplier: 1,
                                                     constant: insets.right)
         addConstraint(constraintTrailing)
-
+        
         let constraintTop = NSLayoutConstraint(item: subview,
                                                attribute: .top,
                                                relatedBy: .equal,
@@ -264,7 +297,7 @@ public extension UIView {
                                                multiplier: 1,
                                                constant: insets.top)
         addConstraint(constraintTop)
-
+        
         let constraintBottom = NSLayoutConstraint(item: self,
                                                   attribute: .bottom,
                                                   relatedBy: .equal,
@@ -275,5 +308,5 @@ public extension UIView {
         addConstraint(constraintBottom)
         return (constraintTop, constraintBottom, constraintLeading, constraintTrailing)
     }
-
+    
 }
