@@ -81,12 +81,12 @@ import WebKit
         }
     }
     
-    @objc public func foreceStop() {
+    @objc public func forceStop() {
         webView?.stopLoading()
         if alreadyCanceled == false {
             skipDismiss = true
             alreadyCanceled = true
-            onUAEPassFailureBlock?("cancel")
+            onUAEPassFailureBlock?("reject")
         }
     }
     
@@ -95,14 +95,23 @@ import WebKit
         guard let urlString = navigationAction.request.mainDocumentURL?.absoluteString else { return }
         print(urlString)
         
-        if urlString.contains("error=access_denied") || urlString.contains("error=cancelled") {
+        if urlString.contains("error=access_denied") {
+            if alreadyCanceled == false {
+                skipDismiss = true
+                alreadyCanceled = true
+                onUAEPassFailureBlock?("reject")
+            }
+            decisionHandler(.cancel, contentMode)
+        } 
+        else if urlString.contains("error=cancel") {
             if alreadyCanceled == false {
                 skipDismiss = true
                 alreadyCanceled = true
                 onUAEPassFailureBlock?("cancel")
             }
             decisionHandler(.cancel, contentMode)
-        } else if urlString.contains(UAEPASSRouter.shared.spConfig.redirectUriLogin) && urlString.contains("code=") {
+        }
+        else if urlString.contains(UAEPASSRouter.shared.spConfig.redirectUriLogin) && urlString.contains("code=") {
             if let url = url, let token = url.valueOf("code") {
                 
                 if onUAEPassSuccessBlock != nil && !token.isEmpty {

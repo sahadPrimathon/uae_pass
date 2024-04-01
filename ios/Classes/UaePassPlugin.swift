@@ -126,7 +126,7 @@ public class UaePassPlugin: NSObject, FlutterPlugin {
             return true
         } else if url.absoluteString.contains(HandleURLScheme.externalURLSchemeFail()) {
             guard let webViewController = UserInterfaceInfo.topViewController() as? UAEPassWebViewController  else { return false}
-            webViewController.foreceStop()
+            webViewController.forceStop()
             return false
         }
         return true
