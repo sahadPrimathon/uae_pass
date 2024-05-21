@@ -210,14 +210,27 @@ class UaePassFlutterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware,Plug
      handleIntent(intent)
     return false
   }
-  private fun handleIntent(intent: Intent?) {
-    if (intent != null && intent.data != null) {
-      if (scheme!! == intent.data!!.scheme) {
-        resume(intent.dataString)
-      }
+//  private fun handleIntent(intent: Intent?) {
+//    if (intent != null && intent.data != null) {
+//      if (scheme!! == intent.data!!.scheme) {
+//        resume(intent.dataString)
+//      }
+//    }
+//  }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent != null && intent.data != null) {
+            if (scheme != null && scheme == intent.data!!.scheme) {
+                resume(intent.dataString)
+            } else {
+                Log.e("UaePassFlutterPlugin", "Scheme is null or does not match")
+            }
+        } else {
+            Log.e("UaePassFlutterPlugin", "Intent or intent data is null")
+        }
     }
-  }
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+
+    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
      channel.setMethodCallHandler(null)
   }
    private fun isPackageInstalled(packageManager: PackageManager): Boolean {
